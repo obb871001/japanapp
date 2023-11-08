@@ -120,7 +120,7 @@ const SearchFood = () => {
                     <section className="h-[300px]">
                       <GoogleMapReact
                         bootstrapURLKeys={{
-                          key: "AIzaSyDsR0vhAPuK6qaC23uHx_xgf0mD1Js1OR0",
+                          key: process.env.REACT_APP_GOOGLE_KEY,
                         }}
                         defaultCenter={{
                           lat: list?.lat,
