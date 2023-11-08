@@ -7,9 +7,7 @@ import Content from "./components/content";
 const Home = () => {
   return (
     <section className="px-common-padding-x">
-      <div className="py-common-padding-y">
-        <MainCarousel />
-      </div>
+      <div className="py-common-padding-y">{/* <MainCarousel /> */}</div>
       <Divider />
       <div className="py-common-padding-y">
         <Selection />

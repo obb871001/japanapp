@@ -33,12 +33,12 @@ const Selection = () => {
           <span className="text-sm">Food</span>
         </div>
       </SplideSlide>
-      <SplideSlide>
+      {/* <SplideSlide>
         <div className="rounded-[5px] bg-white flex flex-col p-[5px] items-center justify-center text-green-500 h-[50px]">
           <MdTravelExplore className="text-2xl" />
           <span className="text-sm text-overflow w-full">Viewpoint</span>
         </div>
-      </SplideSlide>
+      </SplideSlide> */}
       <SplideSlide>
         <div
           onClick={() => {

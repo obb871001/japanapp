@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   MdFastfood,
+  MdOutlineClose,
   MdOutlineKeyboardArrowLeft,
+  MdOutlineModeEditOutline,
   MdRemoveShoppingCart,
   MdShoppingBag,
 } from "react-icons/md";
@@ -20,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { BiTransferAlt } from "react-icons/bi";
 import { FaCarAlt, FaShoppingCart, FaTrain, FaTshirt } from "react-icons/fa";
+import { formatNumber } from "../../utils/formatNumber";
 
 const IconWrapper = ({ children, backgroundColor, setSaveData, name }) => {
   return (
@@ -50,6 +53,10 @@ const Exchange = () => {
   const [saveData, setSaveData] = useState({
     icon: "",
   });
+  const [editMode, setEditMode] = useState({
+    state: false,
+    index: null,
+  });
 
   useEffect(() => {
     axios
@@ -57,7 +64,7 @@ const Exchange = () => {
         params: {
           dataset: "TaiwanExchangeRate",
           data_id: "JPY",
-          date: dayjs().format("YYYY-MM-DD"),
+          date: dayjs().add(-1, "day").format("YYYY-MM-DD"),
         },
       })
       .then((res) => {
@@ -67,9 +74,9 @@ const Exchange = () => {
 
   const resultCurrency = useMemo(() => {
     if (direction === "toTWD") {
-      return currencyValue * rate?.cash_buy;
+      return parseInt(currencyValue * rate?.cash_buy);
     }
-    return currencyValue / rate?.cash_sell;
+    return parseInt(currencyValue / rate?.cash_sell);
   }, [direction, currencyValue]);
 
   useEffect(() => {
@@ -77,8 +84,8 @@ const Exchange = () => {
       ...saveData,
       currency:
         direction === "toTWD"
-          ? currencyValue * rate?.cash_buy
-          : currencyValue || 0,
+          ? parseInt(currencyValue * rate?.cash_buy)
+          : parseInt(currencyValue) || 0,
     });
   }, [resultCurrency]);
 
@@ -107,7 +114,7 @@ const Exchange = () => {
               {direction === "toTWD" ? "¥" : "$"})
             </Text>
             <NumberInput
-              value={currencyValue || 0}
+              value={currencyValue ? currencyValue : 0}
               onChange={(_, v) => {
                 if (direction === "toTWD") {
                   setCurrencyValue(v);
@@ -138,7 +145,7 @@ const Exchange = () => {
             </Text>
             <NumberInput
               isReadOnly
-              value={isNaN(resultCurrency) ? 0 : resultCurrency}
+              value={isNaN(resultCurrency) ? 0 : formatNumber(resultCurrency)}
               size={`sm`}
               min={0}
             >
@@ -189,9 +196,24 @@ const Exchange = () => {
               size="md"
               isDisabled={!saveData?.icon || !saveData?.currency}
               onClick={() => {
-                setList((prev) => {
-                  return [...prev, saveData];
-                });
+                if (editMode.state) {
+                  setList((prev) => {
+                    return prev.map((item, index) => {
+                      if (index === editMode.index) {
+                        return saveData;
+                      }
+                      return item;
+                    });
+                  });
+                  setEditMode({
+                    state: false,
+                    index: null,
+                  });
+                } else {
+                  setList((prev) => {
+                    return [...prev, saveData];
+                  });
+                }
                 setSaveData({
                   icon: "",
                   currency: 0,
@@ -216,7 +238,7 @@ const Exchange = () => {
                 <span>清單是空的</span>
               </section>
             ) : (
-              list?.map((item) => {
+              list?.map((item, index) => {
                 const transferName = (name) => {
                   switch (name) {
                     case "food":
@@ -233,7 +255,32 @@ const Exchange = () => {
                 };
                 return (
                   <div className="flex items-center justify-between">
-                    <span>{transferName(item.icon)}</span>
+                    <div className="flex items-center gap-[10px]">
+                      <span>{index + 1}.</span>
+                      <span>{transferName(item.icon)}</span>
+                      <MdOutlineModeEditOutline
+                        onClick={() => {
+                          setEditMode({
+                            state: true,
+                            index,
+                          });
+                          setSaveData({
+                            icon: item.icon,
+                            currency: item.currency,
+                          });
+                          setCurrencyValue(item.currency);
+                        }}
+                        className="text-green-500 text-lg"
+                      />
+                      <MdOutlineClose
+                        onClick={() => {
+                          setList((prev) => {
+                            return prev.filter((_, i) => i !== index);
+                          });
+                        }}
+                        className="text-red-500 text-lg"
+                      />
+                    </div>
                     <span>{item.currency} $</span>
                   </div>
                 );
